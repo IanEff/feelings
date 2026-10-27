@@ -1,0 +1,29 @@
+# Works with pre-commit or prek (`prek install`).
+# ruff and ty run from the project's own uv.lock, so hook versions never drift from CI.
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: uv run --frozen ruff check --fix
+        language: unsupported
+        types_or: [python, pyi]
+      - id: ruff-format
+        name: ruff format
+        entry: uv run --frozen ruff format
+        language: unsupported
+        types_or: [python, pyi]
+      - id: ty
+        name: ty (uv check)
+        entry: uv check --frozen
+        language: unsupported
+        types_or: [python, pyi]
+        pass_filenames: false
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-toml

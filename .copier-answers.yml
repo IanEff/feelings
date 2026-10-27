@@ -1,0 +1,10 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: v3.0.0
+_src_path: /Users/ian/projects/scaffolding/python/python-template
+author_email: ian.furst@gmail.com
+author_name: Ian Furst
+description: A vector rendering of tenderness
+project_name: feelings
+project_type: full
+python_version: '3.15'
+use_precommit: true

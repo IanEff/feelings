@@ -1,0 +1,60 @@
+[
+  {
+    "label": "Run Tests",
+    "command": "uv",
+    "args": ["run", "pytest"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "reveal": "always",
+    "tags": ["python-test"]
+  },
+  {
+    "label": "Run Tests with Coverage",
+    "command": "uv",
+    "args": ["run", "pytest", "--cov", "--cov-report=term-missing"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "reveal": "always"
+  },
+  {
+    "label": "Run Current Test File",
+    "command": "uv",
+    "args": ["run", "pytest", "$ZED_FILE"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "reveal": "always"
+  },
+  {
+    "label": "Run Failed Tests",
+    "command": "uv",
+    "args": ["run", "pytest", "--lf"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "reveal": "always"
+  },
+  {
+    "label": "Type Check (uv check)",
+    "command": "uv",
+    "args": ["check"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "reveal": "always"
+  },
+  {
+    "label": "Ruff Fix + Format",
+    "command": "uv run ruff check --fix . && uv run ruff format .",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "reveal": "always"
+  },
+  {
+    "label": "Run Current File",
+    "command": "uv",
+    "args": ["run", "$ZED_FILE"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "reveal": "always"
+  },
+  {
+    "label": "IPython REPL",
+    "command": "uv",
+    "args": ["run", "--with", "ipython", "ipython"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "use_new_terminal": true,
+    "allow_concurrent_runs": true,
+    "reveal": "always"
+  }
+]
