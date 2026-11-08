@@ -1,5 +1,10 @@
 version: "3"
 
+# Linters run from uv's tool cache at these versions, never from .venv. Bump them here.
+vars:
+  RUFF: uvx ruff@0.17.3
+  TY: uvx ty@0.0.94
+
 tasks:
   default:
     cmds:
@@ -25,12 +30,34 @@ tasks:
   fmt:
     desc: Fix lint and format with ruff
     cmds:
-      - uv run ruff check --fix .
-      - uv run ruff format .
+      - "{{.RUFF}} check --fix ."
+      - "{{.RUFF}} format ."
 
-  lint:
-    desc: Check lockfile, lint and format without fixing; CI runs this
+  lock-check:
+    desc: Fail if uv.lock is out of date with pyproject.toml
     cmds:
       - uv lock --check
-      - uv run ruff check .
-      - uv run ruff format --check .
+
+  fmt-check:
+    desc: Fail on unformatted code
+    cmds:
+      - "{{.RUFF}} format --check ."
+
+  lint:
+    desc: Ruff lint, no fixes
+    cmds:
+      - "{{.RUFF}} check ."
+
+  typecheck:
+    desc: Type check with ty against .venv, synced first
+    cmds:
+      - uv sync --locked
+      - "{{.TY}} check"
+
+  ci:
+    desc: Every check, in order; CI runs this
+    cmds:
+      - task: lock-check
+      - task: fmt-check
+      - task: lint
+      - task: typecheck

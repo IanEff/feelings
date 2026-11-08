@@ -12,17 +12,29 @@ dependencies = [
     "plotly>=7.1.0",
     "scikit-learn>=1.9.1",
     "sentence-transformers>=6.2.0",
+    # Direct so [tool.uv.sources] can route it; sentence-transformers is what needs it.
+    "torch>=2.15.0",
 ]
 
 [dependency-groups]
 dev = [
     "jupyterlab>=4.6.6",
     "jupytext>=1.19.6",
-    "ruff",
 ]
 
 [tool.uv]
 package = false
+required-version = "==0.13.5"  # setup-uv reads this, so CI runs the same uv
+
+# Linux gets CPU-only torch: PyPI's Linux wheel pulls ~3 GB of CUDA that CI never uses.
+# macOS keeps PyPI's wheel, which is CPU/MPS already.
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
 
 [tool.ruff]
 line-length = 100

@@ -9,21 +9,20 @@ permissions:
   contents: read
 
 jobs:
-  lint:
+  ci:
     runs-on: ubuntu-latest
+    env:
+      # Inline PR annotations; the Taskfile stays the same as local.
+      RUFF_OUTPUT_FORMAT: github
+      TY_OUTPUT_FORMAT: github
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
+      # Installs the uv pinned by required-version in pyproject.toml.
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
 
       - uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0
 
-      # Dev group only. The runtime deps pull torch and ~3 GB of CUDA wheels on Linux,
-      # and nothing in `task lint` imports them.
-      - run: uv sync --locked --only-dev
-
-      - run: task lint
-        env:
-          UV_NO_SYNC: "1" # keep `uv run` from syncing the runtime deps back in
+      - run: task ci

@@ -31,10 +31,15 @@ task setup    # uv sync
 task sync     # main.py <-> main.ipynb
 task nb       # sync, then Jupyter Lab
 task fmt      # ruff fix + format
-task lint     # lockfile, lint and format checks; CI runs this
+task ci       # lock-check, fmt-check, lint, typecheck; CI runs this
 ```
 
-CI installs only the dev group, so it never downloads torch. It doesn't run
+ruff and ty aren't in `.venv`. The Taskfile runs them with `uvx` at the versions
+pinned at its top, so local runs and CI use the same binaries. ty still reads
+packages from `.venv`, so `typecheck` syncs it first.
+
+On Linux, torch comes from PyTorch's CPU index (`[tool.uv.sources]`), so CI
+downloads about 200 MB of torch instead of 3 GB of CUDA. CI doesn't run
 `main.py`.
 
 direnv runs `uv sync --frozen` on `cd` (`.envrc`), so `task setup` is only
