@@ -20,7 +20,9 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import plotly.express as px
 from sentence_transformers import SentenceTransformer
+from sklearn.decomposition import PCA
 
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
@@ -52,7 +54,7 @@ poem_vectors: dict[str, np.ndarray] = {
 
 # %%
 # Squash into 2d array with reference words for plotting.  Robot said to do this for the whole thing, otherwise the coords are all relative.
-from sklearn.decomposition import PCA
+
 
 reference_words = ["tenderness", "anxiety", "grief", "water", "death", "love"]
 word_vectors = model.encode(reference_words, normalize_embeddings=True)
@@ -71,9 +73,10 @@ plot_df = pd.DataFrame(rows)
 # Squoooosh!
 matrix_384d = np.vstack(plot_df["vector"].to_list())
 coords_2d = PCA(n_components=2).fit_transform(matrix_384d)
+plot_df[["x", "y"]] = coords_2d
 
 # %%
-import plotly.express as px
+# Let's display this mess..
 
 plot_df["label"] = plot_df["text"].where(plot_df["group"].eq("reference_word"), "")
 
@@ -86,4 +89,9 @@ fig = px.scatter(
     hover_data=["text"],
 )
 fig.update_traces(textposition="top center")
-fig.show()
+# fig.show()
+out_dir = Path("out")
+out_dir.mkdir(exist_ok=True)
+fig.write_image(out_dir / "stanzas.png", width=1200, height=800, scale=2)
+fig.write_html(out_dir / "stanzas.html")
+fig
