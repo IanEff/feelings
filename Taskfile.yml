@@ -1,0 +1,29 @@
+version: "3"
+
+tasks:
+  default:
+    cmds:
+      - task --list
+    silent: true
+
+  setup:
+    desc: Install .venv from uv.lock
+    cmds:
+      - uv sync
+
+  sync:
+    desc: Sync main.py and main.ipynb; the one saved last wins
+    cmds:
+      - uv run jupytext --sync main.py
+
+  nb:
+    desc: Open main.ipynb in Jupyter Lab
+    cmds:
+      - task: sync
+      - uv run jupyter lab main.ipynb
+
+  fmt:
+    desc: Fix lint and format with ruff
+    cmds:
+      - uv run ruff check --fix .
+      - uv run ruff format .

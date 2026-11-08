@@ -1,4 +1,3 @@
-
 [project]
 name = "feelings"
 version = "0.1.0"
@@ -6,76 +5,23 @@ description = "A vector rendering of tenderness"
 readme = "README.md"
 authors = [{ name = "Ian Furst", email = "ian.furst@gmail.com" }]
 requires-python = ">=3.15"
-dependencies = []
-
-[project.scripts]
-feelings = "feelings.main:main"
-
-[build-system]
-requires = ["uv_build>=0.13.5,<0.14.0"]
-build-backend = "uv_build"
+dependencies = [
+    "pandas>=3.1.1",
+]
 
 [dependency-groups]
 dev = [
-    "pytest",
-    "pytest-cov",
+    "jupyterlab>=4.6.6",
+    "jupytext>=1.19.6",
     "ruff",
-    "ty",
 ]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = ["-v"]
-
-[tool.coverage.run]
-source = ["feelings"]
-
-[tool.coverage.report]
-exclude_lines = [
-        "pragma: no cover",
-        "def __repr__",
-        "raise AssertionError",
-        "raise NotImplementedError",
-        "if __name__ == .__main__.:",
-        "if TYPE_CHECKING:",
-        "@abstractmethod",
-]
-
 
 [tool.uv]
-# `uv check` (uv runs ty) is still preview; opt in here so it doesn't warn on every run.
-preview-features = ["check-command"]
+package = false
 
-# Ruff mirrors ~/.config/ruff/ruff.toml so new projects lint the way the global config does.
-# target-version comes from requires-python.
 [tool.ruff]
 line-length = 100
+extend-exclude = ["*.ipynb"]  # main.ipynb is generated; lint main.py
 
 [tool.ruff.lint]
-select = [
-    "E",    # pycodestyle errors
-    "F",    # pyflakes
-    "W",    # pycodestyle warnings
-    "I",    # isort
-    "B",    # flake8-bugbear
-    "UP",   # pyupgrade
-    "C4",   # flake8-comprehensions
-    "RUF",  # ruff-specific rules
-    "SIM",  # flake8-simplify
-    "S",    # flake8-bandit
-]
-fixable = ["ALL"]
-ignore = [
-    "S101",   # assert is fine
-    "S603",   # subprocess without shell=True
-    "S607",   # subprocess with partial executable path
-    "SIM210",
-    "E1", "E2", "E3", "W1", "W2", "W3",
-    "RUF005", "F841", "F401",  # shitlist, Oct 2025
-    "W293", "S311",
-]
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
-docstring-code-format = true
+select = ["E", "F", "W", "I", "B", "UP", "C4", "RUF", "SIM"]

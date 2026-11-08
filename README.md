@@ -1,62 +1,37 @@
 # feelings
 
-A vector rendering of tenderness
+Five poems loaded into pandas, one stanza-numbered row per line. The vectors in
+"a vector rendering of tenderness" haven't been written yet.
 
-## Setup
+## What's here
 
-direnv does it: `cd` in and `.envrc` runs `uv sync --frozen` and activates `.venv`
-(and loads `.env` if there is one). Without direnv:
+| Path | What it is |
+|---|---|
+| `main.py` | The code. Edit this one. |
+| `main.ipynb` | Generated from `main.py` by jupytext; gitignored. |
+| `data/poems/*.txt` | The poems, one stanza per blank-line-separated block. |
+| `data/poems/SOURCES.tsv` | Title, stanza count and source URL for each poem. |
 
-```bash
-uv sync
+## The notebook
+
+`main.py` is a jupytext percent-format script: each `# %%` starts a cell. Kelly
+works in Jupyter, so `task nb` syncs and opens `main.ipynb` in Jupyter Lab.
+jupytext is a dev dependency, so its Jupyter extension saves both files at once.
+Edits made in Zed reach the notebook on the next `task sync`, or when Jupyter
+reloads the file.
+
+`task sync` runs `jupytext --sync main.py`. Whichever file was saved last wins,
+so sync before switching editors.
+
+## Tasks
+
+```
+task          # list them
+task setup    # uv sync
+task sync     # main.py <-> main.ipynb
+task nb       # sync, then Jupyter Lab
+task fmt      # ruff fix + format
 ```
 
-`just` lists every recipe.
-
-## Structure
-
-```
-feelings/
-├── src/feelings/
-├── tests/
-└── pyproject.toml
-```
-
-## Running
-
-```bash
-uv run feelings           # console script
-uv run python -m feelings
-```
-
-## Checks
-
-```bash
-uv run ruff check .        # lint
-uv run ruff format .       # format
-uv check                   # type check: uv runs ty, at the version pinned in uv.lock
-uv run pytest              # tests
-```
-
-## Dependencies
-
-```bash
-uv add httpx               # runtime
-uv add --dev hypothesis    # dev group
-```
-
-Commit `uv.lock`.
-
-## Zed
-
-Global Zed settings run ty (with `experimental.useUv`) and Ruff for Python.
-`.zed/tasks.json` has test, check and format tasks (`task: spawn`); `.zed/debug.json`
-has debugpy configs (F4).
-
-## Python version
-
-Pinned in `.python-version` (3.15).
-
----
-
-Ian Furst (ian.furst@gmail.com)
+direnv runs `uv sync --frozen` on `cd` (`.envrc`), so `task setup` is only
+needed without it. Zed has the same tasks in `.zed/tasks.json`.
