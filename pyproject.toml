@@ -30,3 +30,6 @@ extend-exclude = ["*.ipynb"]  # main.ipynb is generated; lint main.py
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "C4", "RUF", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+"main.py" = ["B018"]  # a bare `fig` at the end of a cell is how Jupyter displays it

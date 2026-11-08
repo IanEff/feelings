@@ -42,7 +42,7 @@ def chunk_poem(df: pd.DataFrame, lines_per_chunk: int = 2) -> list[str]:
     return [
         " ".join(batch)
         for _, stanza in df.groupby("stanza")
-        for batch in batched(stanza["line"], lines_per_chunk)
+        for batch in batched(stanza["line"], lines_per_chunk, strict=False)
     ]
 
 
@@ -53,7 +53,8 @@ poem_vectors: dict[str, np.ndarray] = {
 }
 
 # %%
-# Squash into 2d array with reference words for plotting.  Robot said to do this for the whole thing, otherwise the coords are all relative.
+# Squash into 2d array with reference words for plotting.  Robot said to do this for the whole
+# thing, otherwise the coords are all relative.
 
 
 reference_words = ["tenderness", "anxiety", "grief", "water", "death", "love"]

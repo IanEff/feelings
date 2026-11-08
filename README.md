@@ -31,7 +31,11 @@ task setup    # uv sync
 task sync     # main.py <-> main.ipynb
 task nb       # sync, then Jupyter Lab
 task fmt      # ruff fix + format
+task lint     # lockfile, lint and format checks; CI runs this
 ```
+
+CI installs only the dev group, so it never downloads torch. It doesn't run
+`main.py`.
 
 direnv runs `uv sync --frozen` on `cd` (`.envrc`), so `task setup` is only
 needed without it. Zed has the same tasks in `.zed/tasks.json`.
