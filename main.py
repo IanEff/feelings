@@ -15,9 +15,11 @@
 # ---
 
 # %%
+import enum
 from itertools import batched
 from pathlib import Path
 
+import networkx as nx
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -38,61 +40,58 @@ poems = {p.stem: load_poem(p) for p in sorted(Path("data/poems").glob("*.txt"))}
 
 
 # %%
-def chunk_poem(df: pd.DataFrame, lines_per_chunk: int = 2) -> list[str]:
-    return [
-        " ".join(batch)
-        for _, stanza in df.groupby("stanza")
-        for batch in batched(stanza["line"], lines_per_chunk, strict=False)
+
+stanzas = pd.DataFrame(
+    [
+        {"poem": name, "stanza": number, "text": " ".join(lines["line"])}
+        for name, df in poems.items()
+        for number, lines in df.groupby("stanza")
     ]
-
-
-poem_chunks: dict[str, list[str]] = {name: chunk_poem(df) for name, df in poems.items()}
-
-poem_vectors: dict[str, np.ndarray] = {
-    name: model.encode(chunks, normalize_embeddings=True) for name, chunks in poem_chunks.items()
-}
-
-# %%
-# Squash into 2d array with reference words for plotting.  Robot said to do this for the whole
-# thing, otherwise the coords are all relative.
-
-
-reference_words = ["tenderness", "anxiety", "grief", "water", "death", "love"]
-word_vectors = model.encode(reference_words, normalize_embeddings=True)
-
-rows = [
-    {"group": name, "text": text, "vector": vec}
-    for name in poem_vectors
-    for text, vec in zip(poem_chunks[name], poem_vectors[name], strict=True)
-] + [
-    {"group": "reference_word", "text": word, "vector": vec}
-    for word, vec in zip(reference_words, word_vectors, strict=True)
-]
-
-plot_df = pd.DataFrame(rows)
-
-# Squoooosh!
-matrix_384d = np.vstack(plot_df["vector"].to_list())
-coords_2d = PCA(n_components=2).fit_transform(matrix_384d)
-plot_df[["x", "y"]] = coords_2d
-
-# %%
-# Let's display this mess..
-
-plot_df["label"] = plot_df["text"].where(plot_df["group"].eq("reference_word"), "")
-
-fig = px.scatter(
-    plot_df,
-    x="x",
-    y="y",
-    color="group",
-    text="label",
-    hover_data=["text"],
 )
-fig.update_traces(textposition="top center")
-# fig.show()
+
+poem_vectors = model.encode(stanzas["text"].tolist(), normalize_embeddings=True)
+
+# %%
+similarity = poem_vectors @ poem_vectors.T
+
+pairs = similarity[np.triu_indices(len(similarity), k=1)]
+px.histogram(pairs, nbins=20)
+
+# %%
+k = 3
+floor = 0.2
+
+neighbors = np.argsort(-similarity, axis=1)[:, 1 : k + 1]
+
+G = nx.Graph()
+G.add_nodes_from(
+    (i, {"poem": row.poem, "stanza": row.stanza, "text": row.text})
+    for i, row in enumerate(stanzas.itertuples())
+)
+G.add_edges_from(
+    (i, int(j), {"weight": float(similarity[i, j])})
+    for i, row in enumerate(neighbors)
+    for j in row
+    if similarity[i, j] >= floor
+)
+
+# %%
+pos = nx.spring_layout(G, weight="weight", seed=42)
+stanzas[["x", "y"]] = [pos[i] for i in stanzas.index]
+
+fig = px.scatter(stanzas, x="x", y="y", color="poem", hover_data=["stanza", "text"])
+for u, v in G.edges:
+    fig.add_shape(
+        type="line",
+        x0=pos[u][0],
+        y0=pos[u][1],
+        x1=pos[v][0],
+        y1=pos[v][1],
+        line={"color": "lightgray", "width": 1},
+        layer="below",
+    )
+
 out_dir = Path("out")
 out_dir.mkdir(exist_ok=True)
-fig.write_image(out_dir / "stanzas.png", width=1200, height=800, scale=2)
-fig.write_html(out_dir / "stanzas.html")
+fig.write_html(out_dir / "graph.html")
 fig
