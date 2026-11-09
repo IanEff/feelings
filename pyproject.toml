@@ -6,6 +6,7 @@ readme = "README.md"
 authors = [{ name = "Ian Furst", email = "ian.furst@gmail.com" }]
 requires-python = ">=3.15"
 dependencies = [
+    "en-core-web-sm",
     "kaleido>=1.5.0",
     "networkx>=3.7",
     "numpy>=2.5.4",
@@ -14,6 +15,7 @@ dependencies = [
     "scikit-learn>=1.9.1",
     "sentence-transformers>=6.2.0",
     # Direct so [tool.uv.sources] can route it; sentence-transformers is what needs it.
+    "spacy>=3.8.18",
     "torch>=2.15.0",
 ]
 
@@ -31,6 +33,7 @@ required-version = "==0.13.5"  # setup-uv reads this, so CI runs the same uv
 # macOS keeps PyPI's wheel, which is CPU/MPS already.
 [tool.uv.sources]
 torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+en-core-web-sm = { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl" }
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
