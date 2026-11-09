@@ -27,6 +27,7 @@ import plotly.graph_objects as go
 import spacy
 from sentence_transformers import SentenceTransformer
 from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
 
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
@@ -79,6 +80,7 @@ G.add_edges_from(
 )
 
 # %%
+# Lemmatization!!!
 nlp = spacy.load("en_core_web_sm", disable=["parser", "ner"])
 
 stanzas["lemmas"] = [
@@ -86,21 +88,30 @@ stanzas["lemmas"] = [
     for doc in nlp.pipe(stanzas["text"])
 ]
 
+# Calculate how much our stanzas overlap by verb/noun
+overlap = np.array(
+    [
+        [len(a & b) / len(a | b) if a | b else 0.0 for b in stanzas["lemmas"]]
+        for a in stanzas["lemmas"]
+    ]
+)
+
 # %%
-pos = nx.spring_layout(G, weight="weight", seed=42)
+
+alpha = 2.0
+
+distance = (1 - similarity) + alpha * overlap
+distance = (distance + distance.T) / 2
+np.fill_diagonal(distance, 0)
+
+pos = TSNE(metric="precomputed", init="random", random_state=42).fit_transform(distance)
+
+
+# %%
+# pos = nx.spring_layout(G, weight="weight", seed=42)
 stanzas[["x", "y"]] = [pos[i] for i in stanzas.index]
 
 fig = px.scatter(stanzas, x="x", y="y", color="poem", hover_data=["stanza", "text"])
-# for u, v in G.edges:
-#     fig.add_shape(
-#         type="line",
-#         x0=pos[u][0],
-#         y0=pos[u][1],
-#         x1=pos[v][0],
-#         y1=pos[v][1],
-#         line={"color": "lightgray", "width": 1},
-#         layer="below",
-#     )
 
 edge_x = [c for u, v in G.edges for c in (pos[u][0], pos[v][0], None)]
 edge_y = [c for u, v in G.edges for c in (pos[u][1], pos[v][1], None)]
