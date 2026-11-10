@@ -216,6 +216,5 @@ __marimo__/
 .streamlit/secrets.toml
 
 # Lauren's poems: private, never committed
-data/
 main.ipynb
 out/

@@ -24,26 +24,50 @@ def _():
 
 @app.function
 def load_poem(path) -> pd.DataFrame:
-    df = pd.DataFrame({"line": path.read_text(encoding="utf-8").splitlines()})
-    df["stanza"] = df["line"].eq("").cumsum()
-    return df[df["line"].ne("")].reset_index(drop=True)
+    """Return one row per text line of the poem at path, whitespace intact.
+
+    blank_before counts the blank or whitespace-only lines above each line.
+    Most poems start a new stanza at any blank line. A double-spaced poem
+    puts a blank line between nearly every pair of lines; there one blank
+    line is vertical spacing, and only a run of two or more starts a stanza.
+    """
+    rows, run = [], 0
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            rows.append({"line": line, "blank_before": run})
+            run = 0
+        else:
+            run += 1
+    df = pd.DataFrame(rows)
+
+    double_spaced = df["blank_before"].iloc[1:].gt(0).mean() > 0.9
+    breaks = df["blank_before"].ge(2 if double_spaced else 1)
+    df["stanza"] = (breaks & (df.index > 0)).cumsum()
+    df["n_gaps"] = df["line"].str.strip().str.count(r"\s{3,}|\t")
+    return df
 
 
 @app.cell
 def _():
-    poems = {p.stem: load_poem(p) for p in sorted(Path("data/poems").glob("*.txt"))}
-    return (poems,)
+    # One row per line, across all poems.
+    lines = pd.concat(
+        [load_poem(p).assign(poem=p.stem) for p in sorted(Path("data/poems").glob("*.txt"))],
+        ignore_index=True,
+    )
+    return (lines,)
 
 
 @app.cell
-def _(model, poems):
-    # Get vector embeddings from stanzas.
-    stanzas = pd.DataFrame(
-        [
-            {"poem": name, "stanza": number, "text": " ".join(lines["line"])}
-            for name, df in poems.items()
-            for number, lines in df.groupby("stanza")
-        ]
+def _(lines, model):
+    # One row per stanza; get vector embeddings from stanzas.
+    stanzas = (
+        lines.groupby(["poem", "stanza"])
+        .agg(
+            text=("line", " ".join),
+            n_lines=("line", "size"),
+            n_gaps=("n_gaps", "sum"),
+        )
+        .reset_index()
     )
 
     poem_vectors = model.encode(stanzas["text"].tolist(), normalize_embeddings=True)
