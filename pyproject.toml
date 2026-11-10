@@ -23,6 +23,7 @@ dependencies = [
 dev = [
     "jupyterlab>=4.6.6",
     "jupytext>=1.19.6",
+    "marimo>=0.25.2",
 ]
 
 [tool.uv]
@@ -49,3 +50,4 @@ select = ["E", "F", "W", "I", "B", "UP", "C4", "RUF", "SIM"]
 
 [tool.ruff.lint.per-file-ignores]
 "main.py" = ["B018"]  # a bare `fig` at the end of a cell is how Jupyter displays it
+"notebook.py" = ["B018"]  # and how marimo displays it
