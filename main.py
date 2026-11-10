@@ -15,8 +15,6 @@
 # ---
 
 # %%
-import enum
-from itertools import batched
 from pathlib import Path
 
 import networkx as nx
@@ -26,7 +24,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 import spacy
 from sentence_transformers import SentenceTransformer
-from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 
 model = SentenceTransformer("all-MiniLM-L6-v2")
